@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyPaws ✨ Cute Study Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for interactive analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 Free SVG JS icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            pink: 'var(--color-pink)',
+                            rose: 'var(--color-rose)',
+                            mint: 'var(--color-mint)',
+                            mintDark: 'var(--color-mint-dark)',
+                            lavender: 'var(--color-lavender)',
+                            purple: 'var(--color-purple)',
+                            cream: 'var(--color-cream)',
+                            yellow: 'var(--color-yellow)',
+                            blue: 'var(--color-blue)',
+                            text: 'var(--color-text)',
+                            heading: 'var(--color-heading)',
+                            card: 'var(--color-card)',
+                            border: 'var(--color-border)',
+                            bg: 'var(--color-bg)'
+                        }
+                    },
+                    boxShadow: {
+                        'cute': '0 4px 0px 0px var(--color-shadow)',
+                        'cute-hover': '0 6px 0px 0px var(--color-shadow)',
+                        'cute-sm': '0 2px 0px 0px var(--color-shadow)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Global Font Override */
+        * {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        /* Matcha Mint (Default Theme) */
+        :root {
+            --color-bg: #F4F7F4;
+            --color-card: #FFFFFF;
+            --color-cream: #E8EFE9;
+            --color-heading: #2D3B32;
+            --color-text: #425447;
+            --color-border: #3B5240;
+            --color-shadow: rgba(45, 59, 50, 0.15);
+            --color-pink: #E3D5CA;
+            --color-rose: #D6CCC2;
+            --color-mint: #C5E1A5;
+            --color-mint-dark: #A5D6A7;
+            --color-lavender: #D8E2DC;
+            --color-purple: #81C784;
+            --color-yellow: #FFE082;
+            --color-blue: #B2DFDB;
+            --pattern-dot-1: #A5D6A7;
+            --pattern-dot-2: #C5E1A5;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            background-image: radial-gradient(var(--pattern-dot-1) 1px, transparent 1px), radial-gradient(var(--pattern-dot-2) 1px, var(--color-bg) 1px);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
+        }
+
+        /* Compact Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-purple);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-6 flex flex-col text-xs sm:text-sm">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-pastel-card/90 backdrop-blur-md border-b-2 border-pastel-border shadow-sm transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-3 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-pastel-pink rounded-xl flex items-center justify-center border-2 border-pastel-border shadow-cute-sm transform -rotate-3">
+                    <i class="fa-solid fa-cat text-sm sm:text-base text-pastel-heading"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-pastel-heading tracking-wide flex items-center gap-1.5 leading-none">
+                        StudyPaws
+                    </h1>
+                    <p class="text-[10px] text-pastel-text font-semibold leading-tight">Track, Bloom & Achieve!</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Level Badge -->
+                <select id="examLevelSelect" onchange="switchLevel(this.value)" class="bg-pastel-lavender border-2 border-pastel-border rounded-lg px-2 py-1 text-xs font-bold text-pastel-heading focus:outline-none cursor-pointer shadow-cute-sm">
+                    <option value="HSC">HSC</option>
+                    <option value="SSC">SSC</option>
+                </select>
+
+                <!-- Pomodoro Trigger Button with updated background -->
+                <button onclick="openPomodoroModal()" class="bg-pastel-yellow hover:bg-amber-200 text-pastel-heading font-bold px-2.5 py-1.5 rounded-lg border-2 border-pastel-border shadow-cute-sm hover:shadow-cute hover:-translate-y-0.5 transition-all flex items-center gap-1.5 text-xs">
+                    <i class="fa-solid fa-stopwatch text-amber-800"></i>
+                    <span class="hidden sm:inline">Timer</span>
+                </button>
+
+                <!-- Settings Trigger -->
+                <button onclick="openSettingsModal()" class="bg-pastel-blue text-pastel-heading p-1.5 px-2 rounded-lg border-2 border-pastel-border shadow-cute-sm hover:shadow-cute transition-all text-xs font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-3 mt-3 flex-grow w-full space-y-3">
+
+        <!-- Compact Motivational Quote Banner -->
+        <div class="bg-gradient-to-r from-pastel-pink via-pastel-lavender to-pastel-blue p-2.5 sm:p-3 rounded-2xl border-2 border-pastel-border shadow-cute relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="relative z-10 flex items-center gap-2.5 w-full sm:w-auto">
+                <div class="w-7 h-7 text-pastel-heading bg-pastel-card/80 rounded-full flex items-center justify-center border border-pastel-border shrink-0">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xs text-amber-600"></i>
+                </div>
+                <p id="quoteText" class="text-xs sm:text-sm font-bold text-pastel-heading leading-snug whitespace-normal break-words flex-1">
+                    "Small daily improvements over time lead to stunning results!"
+                </p>
+            </div>
+            <button onclick="nextQuote()" class="relative z-10 bg-pastel-card hover:opacity-90 text-pastel-heading py-1 px-2.5 rounded-lg border border-pastel-border shadow-cute-sm text-[11px] font-bold transition-all shrink-0 flex items-center justify-center gap-1 self-end sm:self-auto">
+                <i class="fa-solid fa-rotate text-[10px]"></i> Next
+            </button>
+        </div>
+
+        <!-- Dashboard Layout: 2 Columns for Compact PC Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+
+            <!-- Left Side: Goal Ring + Form (5 Cols on PC) -->
+            <div class="md:col-span-5 space-y-3 flex flex-col justify-between">
+                
+                <!-- Today's Goal Card -->
+                <div class="bg-pastel-card p-3 rounded-2xl border-2 border-pastel-border shadow-cute">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <h2 class="text-xs sm:text-sm font-bold text-pastel-heading flex items-center gap-1.5">
+                            <i class="fa-solid fa-bullseye text-pink-600"></i> Today's Goal
+                        </h2>
+                        <button onclick="editDailyGoal()" class="text-[10px] font-bold bg-pastel-yellow text-pastel-heading px-2 py-0.5 rounded-md border border-pastel-border hover:opacity-80">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-around my-1">
+                        <!-- Compact Circular Progress -->
+                        <div class="relative w-20 h-20 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path class="text-pastel-cream" stroke-width="4.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path id="goalProgressRing" class="text-pastel-purple transition-all duration-500 ease-out" stroke-dasharray="0, 100" stroke-width="4.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            </svg>
+                            <div class="absolute flex flex-col items-center justify-center text-center">
+                                <span id="todayHoursText" class="text-base font-bold text-pastel-heading leading-none">0h</span>
+                                <span id="targetHoursText" class="text-[9px] text-pastel-text opacity-70 font-semibold">/ 6.0h</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1 text-right">
+                            <div>
+                                <p class="text-[10px] text-pastel-text opacity-70 font-semibold">Done</p>
+                                <p id="goalPercentText" class="text-sm font-bold text-pastel-heading leading-tight">0%</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-pastel-text opacity-70 font-semibold">Streak</p>
+                                <p id="streakText" class="text-xs font-bold text-amber-600 leading-tight">0 Days</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="goalMessage" class="text-[10px] text-center font-bold bg-pastel-mint py-1 px-2 rounded-lg border border-pastel-border text-pastel-heading mt-1">
+                        <i class="fa-solid fa-seedling text-emerald-600"></i> Every minute counts!
+                    </div>
+                </div>
+
+                <!-- Log Study Form Card -->
+                <div class="bg-pastel-card p-3 rounded-2xl border-2 border-pastel-border shadow-cute flex-grow flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-xs sm:text-sm font-bold text-pastel-heading flex items-center gap-1.5">
+                            <i class="fa-solid fa-pen-nib text-pastel-purple"></i> Log Session
+                        </h2>
+                        <span class="text-[10px] bg-pastel-pink px-2 py-0.5 rounded-md border border-pastel-border font-bold text-pastel-heading">
+                            Quick Entry
+                        </span>
+                    </div>
+
+                    <form id="studyForm" onsubmit="handleLogSubmit(event)" class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-pastel-heading mb-0.5">Date</label>
+                                <input type="date" id="logDate" required class="w-full bg-pastel-cream border border-pastel-border rounded-lg px-2 py-1 text-xs font-bold text-pastel-heading">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-pastel-heading mb-0.5">Subject</label>
+                                <select id="logSubject" required class="w-full bg-pastel-cream border border-pastel-border rounded-lg px-2 py-1 text-xs font-bold text-pastel-heading">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-pastel-heading mb-0.5">Topic / Chapter</label>
+                            <input type="text" id="logTopic" placeholder="e.g. Chapter 4: Integration" class="w-full bg-pastel-cream border border-pastel-border rounded-lg px-2 py-1 text-xs font-semibold text-pastel-heading">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-pastel-heading mb-0.5">Duration</label>
+                                <div class="flex gap-1 items-center">
+                                    <input type="number" id="logHours" min="0" max="24" value="1" required class="w-1/2 bg-pastel-cream border border-pastel-border rounded-lg p-1 text-xs font-bold text-center text-pastel-heading">
+                                    <span class="text-[10px] font-bold text-pastel-heading">h</span>
+                                    <input type="number" id="logMins" min="0" max="59" step="5" value="0" required class="w-1/2 bg-pastel-cream border border-pastel-border rounded-lg p-1 text-xs font-bold text-center text-pastel-heading">
+                                    <span class="text-[10px] font-bold text-pastel-heading">m</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-pastel-heading mb-0.5">Focus Level</label>
+                                <select id="logMood" class="w-full bg-pastel-cream border border-pastel-border rounded-lg px-2 py-1 text-xs font-bold text-pastel-heading">
+                                    <option value="Super Focused">Super Focused</option>
+                                    <option value="Good Focus" selected>Good Focus</option>
+                                    <option value="A Bit Sleepy">A Bit Sleepy</option>
+                                    <option value="Tough Session">Tough Session</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-pastel-mintDark hover:opacity-90 text-pastel-heading font-bold py-1.5 px-3 rounded-lg border-2 border-pastel-border shadow-cute-sm transition-all flex items-center justify-center gap-1.5 text-xs mt-1">
+                            <i class="fa-solid fa-circle-plus"></i> Save Session
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Side: Charts + Analytics (7 Cols on PC) -->
+            <div class="md:col-span-7 bg-pastel-card p-3 rounded-2xl border-2 border-pastel-border shadow-cute space-y-2 flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-dashed border-pastel-border pb-2">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-6 h-6 bg-pastel-yellow rounded-lg border border-pastel-border flex items-center justify-center font-bold text-xs">
+                            <i class="fa-solid fa-chart-column text-amber-800"></i>
+                        </div>
+                        <h2 class="text-xs sm:text-sm font-bold text-pastel-heading">Study Analytics</h2>
+                    </div>
+
+                    <!-- Time Filter Tabs -->
+                    <div class="flex items-center gap-1 bg-pastel-cream p-0.5 rounded-lg border border-pastel-border">
+                        <button onclick="setChartFilter('7days')" id="filter7days" class="px-2 py-0.5 rounded-md text-[10px] font-bold transition-all bg-pastel-purple text-white border border-pastel-border">7 Days</button>
+                        <button onclick="setChartFilter('30days')" id="filter30days" class="px-2 py-0.5 rounded-md text-[10px] font-bold text-pastel-heading hover:bg-pastel-lavender transition-all">30 Days</button>
+                        <button onclick="setChartFilter('all')" id="filterall" class="px-2 py-0.5 rounded-md text-[10px] font-bold text-pastel-heading hover:bg-pastel-lavender transition-all">All</button>
+                    </div>
+                </div>
+
+                <!-- Dual Charts Grid (Compact Heights) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    <!-- Main Hours Line/Bar Chart -->
+                    <div class="bg-pastel-cream/40 p-2 rounded-xl border border-pastel-border">
+                        <h3 class="text-[11px] font-bold text-pastel-heading mb-1 flex items-center gap-1">
+                            <i class="fa-solid fa-chart-line text-pastel-purple"></i> Hours Over Time
+                        </h3>
+                        <div class="relative w-full h-40 sm:h-44">
+                            <canvas id="timeSeriesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Subject Distribution Donut Chart -->
+                    <div class="bg-pastel-cream/40 p-2 rounded-xl border border-pastel-border">
+                        <h3 class="text-[11px] font-bold text-pastel-heading mb-1 flex items-center gap-1">
+                            <i class="fa-solid fa-chart-pie text-pink-600"></i> Subject Breakdown
+                        </h3>
+                        <div class="relative w-full h-40 sm:h-44 flex items-center justify-center">
+                            <canvas id="subjectPieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Log Table & Subject Totals Section -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+            <!-- Recent Logs Table (8 Cols) -->
+            <div class="md:col-span-8 bg-pastel-card p-3 rounded-2xl border-2 border-pastel-border shadow-cute">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xs sm:text-sm font-bold text-pastel-heading flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-check text-emerald-600"></i> Recent Study Logs
+                    </h2>
+                    <span id="logCountBadge" class="text-[10px] bg-pastel-lavender px-2 py-0.5 rounded-md border border-pastel-border font-bold text-pastel-heading">
+                        0 Logs
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto max-h-48 overflow-y-auto rounded-xl border border-pastel-border">
+                    <table class="w-full text-left border-collapse bg-pastel-card text-[11px]">
+                        <thead>
+                            <tr class="bg-pastel-cream border-b border-pastel-border text-[10px] font-bold text-pastel-heading uppercase">
+                                <th class="p-2">Date</th>
+                                <th class="p-2">Subject</th>
+                                <th class="p-2">Topic</th>
+                                <th class="p-2">Duration</th>
+                                <th class="p-2 text-center">Focus</th>
+                                <th class="p-2 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody" class="font-semibold text-pastel-text divide-y divide-pastel-border/30">
+                            <!-- Dynamic rows inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Subject Summary List (4 Cols) -->
+            <div class="md:col-span-4 bg-pastel-card p-3 rounded-2xl border-2 border-pastel-border shadow-cute flex flex-col justify-between">
+                <h2 class="text-xs sm:text-sm font-bold text-pastel-heading mb-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-book-bookmark text-amber-600"></i> Time per Subject
+                </h2>
+                <div id="subjectTotalsList" class="space-y-1.5 overflow-y-auto max-h-48 pr-1 flex-grow">
+                    <!-- Dynamic summary cards here -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-4 text-center text-[11px] font-bold text-pastel-heading opacity-80">
+        <p>StudyPaws | Work Hard & Bloom Bright!</p>
+    </footer>
+
+    <!-- Pomodoro Timer Modal -->
+    <div id="pomodoroModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-pastel-card w-full max-w-sm rounded-2xl border-2 border-pastel-border p-4 shadow-cute relative text-center space-y-3">
+            <button onclick="closePomodoroModal()" class="absolute top-3 right-3 text-pastel-text hover:opacity-80 font-bold text-lg">&times;</button>
+            
+            <!-- Updated Timer Icon badge with pastel-yellow background -->
+            <div class="inline-flex items-center gap-1 bg-pastel-yellow px-3 py-0.5 rounded-full border border-pastel-border text-xs font-bold text-pastel-heading">
+                <i class="fa-solid fa-clock text-amber-800"></i> Focus Timer
+            </div>
+
+            <div class="text-4xl font-bold text-pastel-heading my-2 tracking-wider" id="pomoTimeDisplay">
+                25:00
+            </div>
+
+            <div class="flex justify-center gap-1.5">
+                <button onclick="setPomoMode('work')" id="btnPomoWork" class="px-2.5 py-1 rounded-lg text-xs font-bold border border-pastel-border bg-pastel-purple text-white">Focus (25m)</button>
+                <button onclick="setPomoMode('short')" id="btnPomoShort" class="px-2.5 py-1 rounded-lg text-xs font-bold border border-pastel-border bg-pastel-cream text-pastel-heading">Short Break (5m)</button>
+                <button onclick="setPomoMode('long')" id="btnPomoLong" class="px-2.5 py-1 rounded-lg text-xs font-bold border border-pastel-border bg-pastel-cream text-pastel-heading">Long Break (15m)</button>
+            </div>
+
+            <div class="flex justify-center gap-2 pt-1">
+                <button onclick="togglePomoTimer()" id="pomoStartBtn" class="bg-pastel-mintDark text-pastel-heading font-bold px-4 py-1.5 rounded-xl border border-pastel-border shadow-cute-sm transition-all text-xs">
+                    Start Timer
+                </button>
+                <button onclick="resetPomoTimer()" class="bg-pastel-yellow text-pastel-heading font-bold px-3 py-1.5 rounded-xl border border-pastel-border shadow-cute-sm transition-all text-xs">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings & Custom Subject Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-pastel-card w-full max-w-md rounded-2xl border-2 border-pastel-border p-4 shadow-cute relative space-y-3">
+            <button onclick="closeSettingsModal()" class="absolute top-3 right-3 text-pastel-text hover:opacity-80 font-bold text-lg">&times;</button>
+
+            <h2 class="text-sm font-bold text-pastel-heading flex items-center gap-1.5">
+                <i class="fa-solid fa-sliders text-pastel-purple"></i> Settings & Backup
+            </h2>
+
+            <!-- Custom Subject Addition -->
+            <div class="bg-pastel-cream p-3 rounded-xl border border-pastel-border space-y-1.5">
+                <label class="block text-[10px] font-bold text-pastel-heading">Add Custom Subject</label>
+                <div class="flex gap-2">
+                    <input type="text" id="newSubjectName" placeholder="e.g. Coaching / Exam Prep" class="flex-grow bg-pastel-card border border-pastel-border rounded-lg px-2 py-1 text-xs font-bold text-pastel-heading">
+                    <button onclick="addCustomSubject()" class="bg-pastel-mintDark text-pastel-heading font-bold px-3 py-1 rounded-lg border border-pastel-border text-xs shadow-cute-sm">
+                        Add
+                    </button>
+                </div>
+            </div>
+
+            <!-- Export / Import Data -->
+            <div class="bg-pastel-lavender/30 p-3 rounded-xl border border-pastel-border space-y-2">
+                <h3 class="text-[10px] font-bold text-pastel-heading">Data Management</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="exportDataJSON()" class="bg-pastel-card text-pastel-heading font-bold px-2.5 py-1 rounded-lg border border-pastel-border text-xs shadow-cute-sm flex items-center gap-1">
+                        <i class="fa-solid fa-download"></i> Export JSON
+                    </button>
+                    <label class="bg-pastel-card text-pastel-heading font-bold px-2.5 py-1 rounded-lg border border-pastel-border text-xs shadow-cute-sm cursor-pointer flex items-center gap-1">
+                        <i class="fa-solid fa-upload"></i> Import JSON
+                        <input type="file" id="importFileInput" accept=".json" onchange="importDataJSON(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clear Data -->
+            <div class="pt-1 border-t border-dashed border-pastel-border flex justify-between items-center">
+                <span class="text-[10px] text-red-500 font-bold">Reset logs data</span>
+                <button onclick="clearAllData()" class="bg-red-500/20 hover:bg-red-500/30 text-red-500 font-bold px-2.5 py-1 rounded-lg border border-red-400 text-xs">
+                    Clear Logs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // Set Chart.js Default Font globally to JetBrains Mono
+        Chart.defaults.font.family = "'JetBrains Mono', monospace";
+
+        // Default Subject lists for SSC and HSC
+        const SUBJECTS_DATABASE = {
+            HSC: [
+                "Physics 1st Paper", "Physics 2nd Paper", 
+                "Chemistry 1st Paper", "Chemistry 2nd Paper", 
+                "Higher Math 1st Paper", "Higher Math 2nd Paper", 
+                "Biology 1st Paper", "Biology 2nd Paper", 
+                "Bangla 1st Paper", "Bangla 2nd Paper", 
+                "English 1st Paper", "English 2nd Paper", 
+                "ICT", "Accounting", "Economics", "Finance", "Custom Topic"
+            ],
+            SSC: [
+                "General Math", "Higher Math", "Physics", 
+                "Chemistry", "Biology", "Bangla 1st Paper", 
+                "Bangla 2nd Paper", "English 1st Paper", 
+                "English 2nd Paper", "ICT", "Bangladesh & Global Studies", 
+                "Islam & Moral Edu", "General Science", "Accounting", "Custom Topic"
+            ]
+        };
+
+        const MOTIVATIONAL_QUOTES = [
+            "Small daily improvements over time lead to stunning results!",
+            "Consistency is the key to unlocking your dream goals!",
+            "Take a deep breath! You are capable of amazing things.",
+            "Every hour you study today brings you closer to success.",
+            "Stay focused, stay calm, and keep shining!",
+            "Difficult topics are just opportunities to grow smarter!"
+        ];
+
+        // Global State Variables
+        let currentLevel = localStorage.getItem('studypaws_level') || 'HSC';
+        let dailyTargetHours = parseFloat(localStorage.getItem('studypaws_target')) || 6.0;
+        let logs = JSON.parse(localStorage.getItem('studypaws_logs')) || [];
+        let customSubjects = JSON.parse(localStorage.getItem('studypaws_custom_subs')) || [];
+        
+        let activeChartFilter = '7days';
+        let quoteIndex = 0;
+
+        // Chart instances
+        let timeSeriesChartInstance = null;
+        let subjectPieChartInstance = null;
+
+        // Pomodoro Timer State
+        let pomoInterval = null;
+        let pomoSecondsLeft = 25 * 60;
+        let pomoIsRunning = false;
+
+        // On Load Initializer
+        window.onload = function() {
+            document.getElementById('examLevelSelect').value = currentLevel;
+            document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+            
+            populateSubjects();
+            renderDashboard();
+        };
+
+        // Switch SSC / HSC Target Level
+        function switchLevel(level) {
+            currentLevel = level;
+            localStorage.setItem('studypaws_level', level);
+            populateSubjects();
+        }
+
+        // Populate Subjects Dropdown
+        function populateSubjects() {
+            const select = document.getElementById('logSubject');
+            select.innerHTML = '';
+            
+            const list = [...(SUBJECTS_DATABASE[currentLevel] || []), ...customSubjects];
+            list.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub;
+                opt.textContent = sub;
+                select.appendChild(opt);
+            });
+        }
+
+        // Save All State to localStorage
+        function saveStoredData() {
+            localStorage.setItem('studypaws_logs', JSON.stringify(logs));
+            localStorage.setItem('studypaws_target', dailyTargetHours);
+            localStorage.setItem('studypaws_level', currentLevel);
+            localStorage.setItem('studypaws_custom_subs', JSON.stringify(customSubjects));
+        }
+
+        // Render Entire Dashboard
+        function renderDashboard() {
+            updateGoalProgress();
+            renderLogsTable();
+            renderSubjectTotals();
+            renderCharts();
+        }
+
+        // Handle Session Form Submission
+        function handleLogSubmit(e) {
+            e.preventDefault();
+            const date = document.getElementById('logDate').value;
+            const subject = document.getElementById('logSubject').value;
+            const topic = document.getElementById('logTopic').value.trim() || 'General Revision';
+            const hours = parseFloat(document.getElementById('logHours').value) || 0;
+            const mins = parseFloat(document.getElementById('logMins').value) || 0;
+            const mood = document.getElementById('logMood').value;
+
+            const totalDuration = hours + (mins / 60);
+
+            if (totalDuration <= 0) {
+                alert("Please enter a valid study duration greater than 0!");
+                return;
+            }
+
+            const newLog = {
+                id: Date.now().toString(),
+                date,
+                subject,
+                topic,
+                duration: totalDuration,
+                mood
+            };
+
+            logs.unshift(newLog);
+            saveStoredData();
+            renderDashboard();
+
+            // Reset topic input
+            document.getElementById('logTopic').value = '';
+        }
+
+        // Delete Log Entry
+        function deleteLog(id) {
+            logs = logs.filter(l => l.id !== id);
+            saveStoredData();
+            renderDashboard();
+        }
+
+        // Edit Daily Goal Target
+        function editDailyGoal() {
+            const input = prompt("Enter your new daily study goal target (in hours):", dailyTargetHours);
+            if (input !== null) {
+                const val = parseFloat(input);
+                if (!isNaN(val) && val > 0) {
+                    dailyTargetHours = val;
+                    saveStoredData();
+                    updateGoalProgress();
+                } else {
+                    alert("Please enter a valid number greater than 0.");
+                }
+            }
+        }
+
+        // Calculate Today's Total Hours
+        function getTodayLoggedHours() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            return logs
+                .filter(l => l.date === todayStr)
+                .reduce((sum, l) => sum + l.duration, 0);
+        }
+
+        // Update Today's Progress Ring
+        function updateGoalProgress() {
+            const todayHours = getTodayLoggedHours();
+            const percent = Math.min(Math.round((todayHours / dailyTargetHours) * 100), 100);
+
+            // Ring Stroke Dasharray
+            const ring = document.getElementById('goalProgressRing');
+            ring.setAttribute('stroke-dasharray', `${percent}, 100`);
+
+            document.getElementById('todayHoursText').textContent = `${todayHours.toFixed(1)}h`;
+            document.getElementById('targetHoursText').textContent = `/ ${dailyTargetHours.toFixed(1)}h`;
+            document.getElementById('goalPercentText').textContent = `${percent}%`;
+
+            // Goal Encouragement text
+            const msgEl = document.getElementById('goalMessage');
+            if (percent >= 100) {
+                msgEl.innerHTML = '<i class="fa-solid fa-trophy text-amber-500"></i> Target Reached!';
+                msgEl.className = "text-[10px] text-center font-bold bg-pastel-mint py-1 px-2 rounded-lg border border-pastel-border text-pastel-heading mt-1";
+            } else if (percent >= 50) {
+                msgEl.innerHTML = '<i class="fa-solid fa-star text-amber-500"></i> Over Halfway There!';
+                msgEl.className = "text-[10px] text-center font-bold bg-pastel-yellow py-1 px-2 rounded-lg border border-pastel-border text-pastel-heading mt-1";
+            } else {
+                msgEl.innerHTML = '<i class="fa-solid fa-seedling text-emerald-600"></i> Every minute counts!';
+                msgEl.className = "text-[10px] text-center font-bold bg-pastel-mint py-1 px-2 rounded-lg border border-pastel-border text-pastel-heading mt-1";
+            }
+
+            // Streak calculation
+            const streak = calculateStreak();
+            document.getElementById('streakText').textContent = `${streak} ${streak === 1 ? 'Day' : 'Days'}`;
+        }
+
+        // Streak Logic
+        function calculateStreak() {
+            if (logs.length === 0) return 0;
+
+            const dates = [...new Set(logs.map(l => l.date))].sort().reverse();
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            let streak = 0;
+            let checkDate = new Date();
+
+            // Check if today or yesterday is logged
+            const hasToday = dates.includes(todayStr);
+            if (!hasToday) {
+                checkDate.setDate(checkDate.getDate() - 1);
+                const baselineStr = checkDate.toISOString().split('T')[0];
+                if (!dates.includes(baselineStr)) return 0;
+            }
+
+            while (true) {
+                const dateStr = checkDate.toISOString().split('T')[0];
+                if (dates.includes(dateStr)) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            return streak;
+        }
+
+        // Add Custom Subject
+        function addCustomSubject() {
+            const input = document.getElementById('newSubjectName');
+            const val = input.value.trim();
+            if (val && !customSubjects.includes(val)) {
+                customSubjects.push(val);
+                saveStoredData();
+                populateSubjects();
+                input.value = '';
+            }
+        }
+
+        // Render Logs Table
+        function renderLogsTable() {
+            const tbody = document.getElementById('logsTableBody');
+            tbody.innerHTML = '';
+
+            document.getElementById('logCountBadge').textContent = `${logs.length} Logs`;
+
+            if (logs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="p-4 text-center text-pastel-text opacity-70 font-bold">
+                            <i class="fa-solid fa-inbox text-sm mb-1 block"></i> No study logs recorded yet!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-pastel-cream/50 transition-colors";
+
+                const mins = Math.round((log.duration % 1) * 60);
+                const hrs = Math.floor(log.duration);
+                const durationText = hrs > 0 ? `${hrs}h ${mins > 0 ? mins + 'm' : ''}` : `${mins}m`;
+
+                tr.innerHTML = `
+                    <td class="p-2 font-bold text-pastel-heading whitespace-nowrap">${log.date}</td>
+                    <td class="p-2">
+                        <span class="bg-pastel-lavender text-pastel-heading px-1.5 py-0.5 rounded-md border border-pastel-border/30 font-bold">
+                            ${log.subject}
+                        </span>
+                    </td>
+                    <td class="p-2 text-pastel-text max-w-xs truncate">${log.topic}</td>
+                    <td class="p-2 font-bold text-pastel-purple whitespace-nowrap">${durationText}</td>
+                    <td class="p-2 text-center whitespace-nowrap">${log.mood || 'Good Focus'}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="deleteLog('${log.id}')" class="text-red-500 hover:text-red-700 font-bold p-0.5">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Subject Totals List
+        function renderSubjectTotals() {
+            const container = document.getElementById('subjectTotalsList');
+            container.innerHTML = '';
+
+            const totals = {};
+            logs.forEach(l => {
+                totals[l.subject] = (totals[l.subject] || 0) + l.duration;
+            });
+
+            const sortedSubjects = Object.keys(totals).sort((a,b) => totals[b] - totals[a]);
+
+            if (sortedSubjects.length === 0) {
+                container.innerHTML = `<p class="text-xs text-pastel-text opacity-70 font-bold text-center py-4">No subject data available.</p>`;
+                return;
+            }
+
+            sortedSubjects.forEach(sub => {
+                const hours = totals[sub];
+                const card = document.createElement('div');
+                card.className = "bg-pastel-cream/60 px-2 py-1.5 rounded-xl border border-pastel-border flex items-center justify-between";
+                card.innerHTML = `
+                    <span class="text-[11px] font-bold text-pastel-heading truncate max-w-[130px]">${sub}</span>
+                    <span class="text-[10px] font-extrabold bg-pastel-card px-1.5 py-0.5 rounded-md border border-pastel-border text-pastel-purple">
+                        ${hours.toFixed(1)} hrs
+                    </span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Time Filter Switcher
+        function setChartFilter(filter) {
+            activeChartFilter = filter;
+
+            ['7days', '30days', 'all'].forEach(f => {
+                const btn = document.getElementById(`filter${f}`);
+                if (f === filter) {
+                    btn.className = "px-3 py-1 rounded-xl text-xs font-bold transition-all bg-pastel-purple text-white border border-pastel-border";
+                } else {
+                    btn.className = "px-3 py-1 rounded-xl text-xs font-bold text-pastel-heading hover:bg-pastel-lavender transition-all";
+                }
+            });
+
+            renderCharts();
+        }
+
+        // Helper to get computed CSS variable values for Chart.js
+        function getComputedThemeColor(varName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        }
+
+        // Render Interactive Chart.js Graphs
+        function renderCharts() {
+            // Filter logs based on active filter
+            let filteredLogs = [...logs];
+            const now = new Date();
+
+            if (activeChartFilter === '7days') {
+                const past7 = new Date();
+                past7.setDate(now.getDate() - 7);
+                filteredLogs = logs.filter(l => new Date(l.date) >= past7);
+            } else if (activeChartFilter === '30days') {
+                const past30 = new Date();
+                past30.setDate(now.getDate() - 30);
+                filteredLogs = logs.filter(l => new Date(l.date) >= past30);
+            }
+
+            // Group by Date for Time Series
+            const dateMap = {};
+            filteredLogs.forEach(l => {
+                dateMap[l.date] = (dateMap[l.date] || 0) + l.duration;
+            });
+
+            const sortedDates = Object.keys(dateMap).sort();
+            const dateLabels = sortedDates.map(d => d.slice(5)); // MM-DD
+            const durationData = sortedDates.map(d => dateMap[d].toFixed(1));
+
+            // Theme-aware Chart Colors
+            const barBgColor = getComputedThemeColor('--color-rose');
+            const borderColor = getComputedThemeColor('--color-border');
+            const textColor = getComputedThemeColor('--color-heading');
+
+            // 1. Time Series Line/Bar Chart
+            const timeCtx = document.getElementById('timeSeriesChart').getContext('2d');
+            if (timeSeriesChartInstance) timeSeriesChartInstance.destroy();
+
+            timeSeriesChartInstance = new Chart(timeCtx, {
+                type: 'bar',
+                data: {
+                    labels: dateLabels.length > 0 ? dateLabels : ['No Data'],
+                    datasets: [{
+                        label: 'Study Hours',
+                        data: durationData.length > 0 ? durationData : [0],
+                        backgroundColor: barBgColor,
+                        borderColor: borderColor,
+                        borderWidth: 2,
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: borderColor + '40' },
+                            ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 }, color: textColor }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 }, color: textColor }
+                        }
+                    }
+                }
+            });
+
+            // 2. Subject Breakdown Donut Chart
+            const subjectMap = {};
+            filteredLogs.forEach(l => {
+                subjectMap[l.subject] = (subjectMap[l.subject] || 0) + l.duration;
+            });
+
+            const pieCtx = document.getElementById('subjectPieChart').getContext('2d');
+            if (subjectPieChartInstance) subjectPieChartInstance.destroy();
+
+            const subjectLabels = Object.keys(subjectMap);
+            const subjectValues = Object.values(subjectMap).map(v => v.toFixed(1));
+
+            const themeColors = [
+                getComputedThemeColor('--color-pink'),
+                getComputedThemeColor('--color-mint-dark'),
+                getComputedThemeColor('--color-lavender'),
+                getComputedThemeColor('--color-yellow'),
+                getComputedThemeColor('--color-blue'),
+                getComputedThemeColor('--color-purple'),
+                getComputedThemeColor('--color-rose'),
+                getComputedThemeColor('--color-mint')
+            ];
+
+            subjectPieChartInstance = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: subjectLabels.length > 0 ? subjectLabels : ['No Data'],
+                    datasets: [{
+                        data: subjectValues.length > 0 ? subjectValues : [1],
+                        backgroundColor: themeColors,
+                        borderColor: borderColor,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: "'JetBrains Mono', monospace", size: 10, weight: 'bold' },
+                                color: textColor,
+                                boxWidth: 12
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Motivational Banner Quote Switcher
+        function nextQuote() {
+            quoteIndex = (quoteIndex + 1) % MOTIVATIONAL_QUOTES.length;
+            document.getElementById('quoteText').textContent = `"${MOTIVATIONAL_QUOTES[quoteIndex]}"`;
+        }
+
+        // Pomodoro Timer Functions
+        function openPomodoroModal() {
+            document.getElementById('pomodoroModal').classList.remove('hidden');
+        }
+        function closePomodoroModal() {
+            document.getElementById('pomodoroModal').classList.add('hidden');
+        }
+
+        function setPomoMode(mode) {
+            pausePomoTimer();
+            if (mode === 'work') pomoSecondsLeft = 25 * 60;
+            if (mode === 'short') pomoSecondsLeft = 5 * 60;
+            if (mode === 'long') pomoSecondsLeft = 15 * 60;
+
+            updatePomoDisplay();
+        }
+
+        function togglePomoTimer() {
+            if (pomoIsRunning) {
+                pausePomoTimer();
+            } else {
+                startPomoTimer();
+            }
+        }
+
+        function startPomoTimer() {
+            pomoIsRunning = true;
+            document.getElementById('pomoStartBtn').textContent = "Pause";
+            pomoInterval = setInterval(() => {
+                if (pomoSecondsLeft > 0) {
+                    pomoSecondsLeft--;
+                    updatePomoDisplay();
+                } else {
+                    pausePomoTimer();
+                }
+            }, 1000);
+        }
+
+        function pausePomoTimer() {
+            pomoIsRunning = false;
+            clearInterval(pomoInterval);
+            document.getElementById('pomoStartBtn').textContent = "Start Timer";
+        }
+
+        function resetPomoTimer() {
+            pausePomoTimer();
+            pomoSecondsLeft = 25 * 60;
+            updatePomoDisplay();
+        }
+
+        function updatePomoDisplay() {
+            const mins = Math.floor(pomoSecondsLeft / 60);
+            const secs = pomoSecondsLeft % 60;
+            document.getElementById('pomoTimeDisplay').textContent = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Settings Modal
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        // Export Data JSON
+        function exportDataJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                logs,
+                dailyTargetHours,
+                currentLevel,
+                customSubjects
+            }));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `studypaws_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // Import Data JSON
+        function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.logs) logs = imported.logs;
+                    if (imported.dailyTargetHours) dailyTargetHours = imported.dailyTargetHours;
+                    if (imported.currentLevel) currentLevel = imported.currentLevel;
+                    if (imported.customSubjects) customSubjects = imported.customSubjects;
+
+                    saveStoredData();
+                    populateSubjects();
+                    renderDashboard();
+                    alert("✨ Study logs imported successfully!");
+                    closeSettingsModal();
+                } catch (err) {
+                    alert("Failed to parse JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Clear All Data
+        function clearAllData() {
+            if (confirm("Are you sure you want to delete all logged study sessions? This cannot be undone!")) {
+                logs = [];
+                saveStoredData();
+                renderDashboard();
+                closeSettingsModal();
+            }
+        }
+    </script>
+</body>
+</html>
