@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- PWA Manifest & iOS Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#81C784">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="StudyPaws">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyPaws ✨ Cute Study Tracker</title>
@@ -999,5 +1005,15 @@
             }
         }
     </script>
+    <!-- Register Service Worker -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then((reg) => console.log('ServiceWorker registered:', reg.scope))
+                .catch((err) => console.error('ServiceWorker registration failed:', err));
+        });
+    }
+</script>
 </body>
 </html>
